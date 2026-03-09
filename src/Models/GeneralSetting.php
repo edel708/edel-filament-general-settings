@@ -36,12 +36,21 @@ class GeneralSetting extends Model
 
     public static function booting(){
 
-        static::updating(function($settings){
+        static::updated(function($settings){
 
             $mail_fields = ['email_settings', 'email_from_name', 'email_from_address'];
 
             if($settings->isDirty($mail_fields)){
-                MailConfigurationApplied::dispatch();
+
+                $previuos = [
+                    'from' => [
+                        'name' => $settings->getOriginal()['email_from_name'],
+                        'address' => $settings->getOriginal()['email_from_address'],
+                    ],
+                    'mailer' => $settings->getOriginal()['email_settings'],
+                ];
+
+                MailConfigurationApplied::dispatch($previuos);
             }
         });
     }
