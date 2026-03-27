@@ -1,6 +1,7 @@
 <?php
 
 namespace Joaopaulolndev\FilamentGeneralSettings\Models;
+use EdelRojas\FilamentDynamicMail\Events\MailConfigurationApplied;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -32,4 +33,25 @@ class GeneralSetting extends Model
         'social_network' => 'array',
         'more_configs' => 'array',
     ];
+
+    public static function booting(){
+
+        static::updated(function($settings){
+
+            $mail_fields = ['email_settings', 'email_from_name', 'email_from_address'];
+           
+            if($settings->wasChanged($mail_fields)){
+
+                $previuos = [
+                    'from' => [
+                        'name' => $settings->getOriginal()['email_from_name'],
+                        'address' => $settings->getOriginal()['email_from_address'],
+                    ],
+                    'mailer' => $settings->getOriginal()['email_settings'],
+                ];
+
+                MailConfigurationApplied::dispatch($previuos);
+            }
+        });
+    }
 }
