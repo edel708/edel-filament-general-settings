@@ -39,7 +39,7 @@ class GeneralSetting extends Model
         static::updated(function($settings){
 
             $mail_fields = ['email_settings', 'email_from_name', 'email_from_address'];
-           
+
             if($settings->wasChanged($mail_fields)){
 
                 $previuos = [
@@ -50,7 +50,15 @@ class GeneralSetting extends Model
                     'mailer' => $settings->getOriginal()['email_settings'],
                 ];
 
-                MailConfigurationApplied::dispatch($previuos);
+                $current = [
+                    'from' => [
+                        'name'    => $settings->email_from_name,
+                        'address' => $settings->email_from_address,
+                    ],
+                    'mailer' => $settings->email_settings,
+                ];
+
+                MailConfigurationApplied::dispatch($previuos, $current);
             }
         });
     }
